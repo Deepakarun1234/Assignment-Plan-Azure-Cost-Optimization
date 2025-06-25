@@ -1,0 +1,38 @@
+name: Deploy to Azure
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+env:
+  RESOURCE_GROUP: 'symplique-cosmos-rg'
+  LOCATION: 'eastus'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Azure Login
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+    
+    - name: Install Bicep
+      run: az bicep install
+      
+    - name: Deploy Infrastructure
+      run: |
+        az deployment group create \
+          --resource-group $RESOURCE_GROUP \
+          --template-file infrastructure/main.bicep \
+          --parameters infrastructure/parameters.json
+          
+    - name: Deploy Functions
+      run: |
+        cd src
+        func azure functionapp publish ${{ env.FUNCTION_APP_NAME }}

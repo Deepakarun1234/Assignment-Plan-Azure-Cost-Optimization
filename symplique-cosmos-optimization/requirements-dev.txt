@@ -1,0 +1,6 @@
+azure-functions
+azure-cosmos
+azure-storage-blob
+pytest
+pytest-cov
+python-dotenv
